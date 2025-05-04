@@ -17,9 +17,17 @@ Because I wanted to see what was playing at any given moment without having to s
 
 
 ## Example
+
+### Compile
+```terminal
+$ cd <path/to/spotify-artist-title>
+$ cargo build --release
+```
+
+### Run
 If Spotify **is** open:
 ```terminal
-$ <path/to/spotify-artist-title/binary>
+$ <path/to/spotify-artist-title/>release/spotify-artist-title>
 <TITLE> - by <ARTIST>
 ```
 
