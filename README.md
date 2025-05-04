@@ -1,11 +1,11 @@
 <div align="center">
 
 # spotify-artist-title
-**because why not**
+**because why not**\
 *for I am too lazy to switch windows*
 
-[Why](#why)
-[PolyBar Integration](#polgybar-integration)
+[Why](#why) •
+[PolyBar Integration](#polybar-integration)
 
 </div>
 
