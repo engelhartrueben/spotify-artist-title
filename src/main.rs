@@ -1,27 +1,18 @@
 use std::process::{Command, Output};
 
-#[cfg(debug_assertions)]
-macro_rules! debug {
-    ($x:expr) => {
-        dbg!($x)
-    };
-}
-
 fn main() {
-    let mut artist = "";
-    let mut title = "";
-
     let meta_data_utf8 = get_meta_data();
 
     // check if meta data is okay, if NOT, return
     let meta_data_utf8 = match meta_data_utf8.is_ok() {
         true => meta_data_utf8.unwrap(),
         false => {
-            debug!(
+            debug_assert!({
                 meta_data_utf8
                     .err()
-                    .inspect(|err| println!("ERROR: {}", err))
-            );
+                    .inspect(|err| println!("ERROR: {}", err));
+                true
+            });
 
             // if error, print empty new line to remove
             // module in polybar
@@ -32,10 +23,13 @@ fn main() {
 
     // Check if stderr is populated, if so, return
     if !meta_data_utf8.stderr.is_empty() {
-        debug!(println!(
-            "STDERR: {}",
-            String::from_utf8(meta_data_utf8.stderr).unwrap()
-        ));
+        debug_assert!({
+            println!(
+                "STDERR: {}",
+                String::from_utf8(meta_data_utf8.stderr).unwrap()
+            );
+            true
+        });
 
         // if error, print empty new line to remove
         // moduele in polybar
@@ -45,7 +39,10 @@ fn main() {
 
     // Check if stdout is empty, if so, return
     if meta_data_utf8.stdout.is_empty() {
-        debug!(println!("Nothing in stdout!"));
+        debug_assert!({
+            println!("Nothing in stdout!");
+            true
+        });
 
         // if nothing in stdout, print empty new line to remove
         // the polybar module
@@ -57,40 +54,14 @@ fn main() {
     let meta_data = String::from_utf8(meta_data_utf8.stdout).unwrap();
 
     // Split lines
-    let iter_meta_data: Vec<&str> = meta_data.trim().split('\n').collect();
+    let iter_meta_data: Vec<&str> = meta_data.trim().split("\"").collect();
 
-    // Gross iteration, but it the information is in a relative location
-    for (i, e) in (&iter_meta_data).into_iter().enumerate() {
-        if e.contains("title") {
-            title = &iter_meta_data[i + 1]
-                .trim()
-                .split("\"")
-                .collect::<Vec<&str>>()[1];
-        }
+    // use absolute position of information
+    let title = &iter_meta_data[29].trim();
 
-        if e.contains("artist") {
-            artist = &iter_meta_data[i + 2]
-                .trim()
-                .split("\"")
-                .collect::<Vec<&str>>()[1];
-        }
-    }
+    let artist = &iter_meta_data[21].trim();
 
-    // Check if either are blank, if so, return
-    match title != "" && artist != "" {
-        true => println!("{} - by {}", title, artist),
-        // if for some reason either are blank
-        // print empty new line to remove the polybar module
-        false => {
-            debug!(println!(
-                "Empty title: {}\nEmpty artist: {}",
-                title.is_empty(),
-                artist.is_empty()
-            ));
-
-            println!("");
-        }
-    };
+    println!("{} - by {}", title, artist);
 }
 
 fn get_meta_data() -> Result<Output, std::io::Error> {
@@ -100,10 +71,5 @@ fn get_meta_data() -> Result<Output, std::io::Error> {
                       /org/mpris/MediaPlayer2 org.freedesktop.DBus.Properties.Get \
                       string:org.mpris.MediaPlayer2.Player string:Metadata";
 
-    let res = Command::new(title_cmd).args(title_args.split(" ")).output();
-
-    match res {
-        Ok(ok) => Ok(ok),
-        Err(error) => Err(error),
-    }
+    Command::new(title_cmd).args(title_args.split(" ")).output()
 }
